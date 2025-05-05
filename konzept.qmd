@@ -1,0 +1,128 @@
+---
+title: "Standardisierte Ehemaligenbefragung 2024" 
+author: 
+  - name: "Olivia Blöchliger"
+    affiliation: "Bildungsplanung des Kantons Zürich"
+date: last-modified
+date-format: "DD.MM.YYYY"
+doi: "Internes Dokument"
+lang: de
+published-title: "Datum"
+affiliation-title:  "Abteilung"
+doi-title: "Klassifikation"
+format: 
+    html:
+        theme: "../quarto_templates/style/bipla.scss"
+        toc: true
+        toc-location: left
+        toc-title: "Inhalt"
+        title-block-banner: "#0076BD"
+        css: "../quarto_templates/style/logo.css"
+fig-cap-location: top
+fig-align: "left"
+embed-resources: true
+params:
+    schule: params$schule
+engine: knitr
+execute:
+  warning: false
+  echo: false
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+## Lead
+
+## Einleitung
+
+Kontext der Abschlusskohorte 2022 (Befragung Frühling 2024, Abschluss
+Sommer 2022)
+
+-   Das 5. und 6. Jahr an der Mittelschule fiel in die Zeit, als es
+    diverse Massnahmen zur Einschränkung der Covid-19-Pandemie gab.
+
+-   Zunahme beim digitalen Lernen
+
+Themen
+
+-   Vermittlung von Wissen im Umgang mit digitalen Medien
+
+    -   Entwicklung seit 2021
+
+        ```{r}
+
+        digi_schule_t <- seb24 %>% 
+        filter(!is.na(profil)) %>% 
+         select(starts_with("schule")) %>%
+           summarise_all(mean, na.rm=T) %>% 
+          pivot_longer(cols=1:5, names_to = "indicator", values_to = "mean") %>% 
+            mutate(profil = "Total")%>%
+          mutate(indicator = case_when
+                 (indicator == "schule_zwecke" ~ "Nutzung digitaler Medien für private Zwecke",
+                   indicator == "schule_aufträge" ~ "Nutzung digitaler Medien für schulische Aufträge",
+                   indicator == "schule_selbständig" ~ "Nutzung digitaler Medien für selbständiges Lernen",
+                   indicator == "schule_gefahren" ~ "Kenntnis der Auswirkungen und Gefahren digitaler Medien",
+                   indicator == "schule_tools" ~ "Kenntnis der technischen Seite digitaler Tools"),
+                  text = paste0(profil, ": ", round(mean, 2)),
+                   profil = fct_relevel(profil, "Total"),
+                 indicator = factor (indicator, levels = c("Nutzung digitaler Medien für private Zwecke", "Kenntnis der technischen Seite digitaler Tools", "Nutzung digitaler Medien für selbständiges Lernen", "Kenntnis der Auswirkungen und Gefahren digitaler Medien", "Nutzung digitaler Medien für schulische Aufträge"))) 
+                 
+                 
+
+        digi_schule_p <- s %>% 
+          group_by(profil)%>% 
+        filter(!is.na(profil)) %>%  
+          select(starts_with("schule")) %>% 
+          summarise_all(mean, na.rm=T) %>% 
+          pivot_longer(cols=2:6, names_to = "indicator", values_to = "mean") %>% 
+          mutate(indicator = case_when
+                 (indicator == "schule_zwecke" ~ "Nutzung digitaler Medien für private Zwecke",
+                   indicator == "schule_aufträge" ~ "Nutzung digitaler Medien für schulische Aufträge",
+                   indicator == "schule_selbständig" ~ "Nutzung digitaler Medien für selbständiges Lernen",
+                   indicator == "schule_gefahren" ~ "Kenntnis der Auswirkungen und Gefahren digitaler Medien",
+                   indicator == "schule_tools" ~ "Kenntnis der technischen Seite digitaler Tools"),
+                  text = paste0(profil, ": ", round(mean, 2)),
+                   profil = factor(profil, levels = c("Altsprachlich", "Mathematisch-Naturwissenschaftlich", "Neusprachlich", "Wirtschaftlich-Rechtlich","Musisch", "Total")),
+          indicator = factor (indicator, levels = c("Nutzung digitaler Medien für private Zwecke", "Kenntnis der technischen Seite digitaler Tools", "Nutzung digitaler Medien für selbständiges Lernen", "Kenntnis der Auswirkungen und Gefahren digitaler Medien", "Nutzung digitaler Medien für schulische Aufträge"))) 
+                 
+
+
+        digi_schule <- bind_rows(digi_schule_p, digi_schule_t)
+
+
+        plot_6 <-ggplot(digi_schule, aes(x=indicator, y=mean, colour=profil,                          tooltip = text, data_id = profil)) +
+          geom_point_interactive(size=2) +
+          coord_flip() +
+          geom_jitter(width = 0.02, height = 0.02) +
+          scale_y_continuous(limits = c(1, 6.1), breaks = seq(1, 6.1, 1), 
+                             labels = function(y) str_wrap(c("1 sehr wenig", "2", "3", "4", "5", "6 sehr viel"), 10)) +
+          scale_colour_manual(values = profil_colors)+
+          scale_x_discrete(labels = function(x) str_wrap(x, width = 35))+
+            theme_minimal()+
+            theme(axis.text.x = element_text(size = 8, angle = 90), 
+                  axis.text.y = element_text(size = 8),  
+                  axis.title = element_blank(), legend.position = "bottom", legend.justification = "right", legend.title = element_blank())+
+            guides(color = guide_legend(ncol = 2))
+
+        girafe(ggobj = plot_6, height_svg = 5) %>% 
+           girafe_options(opts_hover("opacity:0.7;"),opts_zoom(max = 10), opts_tooltip(use_fill =TRUE))
+
+        # insert_plot(plot_6, html, height = 5)
+
+        ```
+
+-   Ausbildungsqualität aus Sich der ehemaligen Gymnasiastinnen und
+    Gymnasiasten
+
+    -   Zufriedenheit mit der Ausbildung
+
+    -   Fachliche Vorbereitung
+
+    -   Persönlichkeitsbildende Vorbereitung
+
+    -   Vorbereitung auf selbständiges Arbeiten
+
+-   Überfachliche Kompetenzen
+
+-   Lernen am Gymnasium
